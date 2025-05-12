@@ -18,6 +18,9 @@ const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 6 * 3600; // GMT+6
 const int daylightOffset_sec = 0;
 
+// Buzzer pin
+#define BUZZER_PIN 25
+
 SMTPSession smtp;
 SMTP_Message message;
 
@@ -30,6 +33,10 @@ void sendEmail();
 void setup()
 {
   Serial.begin(115200);
+
+  // Setup buzzer pin
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW); // Ensure buzzer is off initially
 
   // Connect to WiFi
   WiFi.begin(ssid, password);
@@ -53,6 +60,7 @@ void loop()
   if (Serial.available())
   {
     String input = Serial.readStringUntil('\n');
+    delay(1000);
     input.trim();
 
     if (input.length() == 5 && input.charAt(2) == ':')
@@ -106,6 +114,20 @@ void loop()
 
 void sendEmail()
 {
+  // Play tone on speaker (e.g., 1000 Hz for 3 seconds)
+  const int freq = 1000;    // frequency in Hz
+  const int channel = 0;    // PWM channel (0-15)
+  const int resolution = 8; // resolution in bits (1-16)
+
+  ledcSetup(channel, freq, resolution);
+  ledcAttachPin(BUZZER_PIN, channel);
+  ledcWriteTone(channel, freq);
+
+  delay(3000); // play tone for 3 seconds
+
+  ledcWriteTone(channel, 0); // stop tone
+
+  // --- Send email ---
   ESP_Mail_Session session;
   session.server.host_name = SMTP_HOST;
   session.server.port = SMTP_PORT;
