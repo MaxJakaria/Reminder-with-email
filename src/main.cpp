@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <ESP_Mail_Client.h>
 #include "time.h"
+#include "melody.h"
 
 // WiFi credentials
 const char *ssid = "Galaxy M31850B";
@@ -34,9 +35,9 @@ void setup()
 {
   Serial.begin(115200);
 
-  // Setup buzzer pin
+  // Setup buzzer pin (optional if melody uses PWM)
   pinMode(BUZZER_PIN, OUTPUT);
-  digitalWrite(BUZZER_PIN, LOW); // Ensure buzzer is off initially
+  digitalWrite(BUZZER_PIN, LOW);
 
   // Connect to WiFi
   WiFi.begin(ssid, password);
@@ -114,18 +115,8 @@ void loop()
 
 void sendEmail()
 {
-  // Play tone on speaker (e.g., 1000 Hz for 3 seconds)
-  const int freq = 1000;    // frequency in Hz
-  const int channel = 0;    // PWM channel (0-15)
-  const int resolution = 8; // resolution in bits (1-16)
-
-  ledcSetup(channel, freq, resolution);
-  ledcAttachPin(BUZZER_PIN, channel);
-  ledcWriteTone(channel, freq);
-
-  delay(3000); // play tone for 3 seconds
-
-  ledcWriteTone(channel, 0); // stop tone
+  // Play melody as alarm
+  playMelody();
 
   // --- Send email ---
   ESP_Mail_Session session;
@@ -136,7 +127,7 @@ void sendEmail()
 
   message.sender.name = "ESP32 Tablet Reminder";
   message.sender.email = AUTHOR_EMAIL;
-  message.subject = "Tablet Reminder";
+  message.subject = "Medicine Reminder";
   message.addRecipient("User", RECIPIENT_EMAIL);
   message.text.content = "It's time to take your medicine!";
   message.text.charSet = "utf-8";
