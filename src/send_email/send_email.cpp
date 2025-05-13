@@ -11,12 +11,12 @@ void sendEmail()
     session.login.email = AUTHOR_EMAIL;
     session.login.password = AUTHOR_PASSWORD;
 
-    message.sender.name = "ESP32 Tablet Reminder";
+    message.sender.name = "Your Gourdian";
     message.sender.email = AUTHOR_EMAIL;
     message.subject = "Medicine Reminder";
     message.addRecipient("User", RECIPIENT_EMAIL);
     message.text.content = "It's time to take your medicine!";
-    message.text.charSet = "utf-8";
+    message.text.charSet = "utf-16";
     message.text.transfer_encoding = Content_Transfer_Encoding::enc_7bit;
 
     if (!smtp.connect(&session))

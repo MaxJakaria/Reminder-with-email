@@ -2,7 +2,7 @@
 
 -> required library: "ESP Mail Client" by Mobizet
 
-### 2. Speaker with melody tune
+### 2. [Speaker with melody tune](https://github.com/MaxJakaria/Reminder-with-email/tree/3f132b448fa7fd7822138d3faf47e3c0fea05eaf)
 
 ![npn transistor](<BC547 NPN.png>)
 
