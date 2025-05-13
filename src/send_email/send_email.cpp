@@ -5,8 +5,6 @@
 
 void sendEmail()
 {
-    playMelody();
-
     ESP_Mail_Session session;
     session.server.host_name = SMTP_HOST;
     session.server.port = SMTP_PORT;

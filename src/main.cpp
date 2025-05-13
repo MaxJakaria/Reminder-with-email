@@ -30,8 +30,6 @@ int reminderHour = -1;
 int reminderMinute = -1;
 bool emailSentToday = false;
 
-void sendEmail();
-
 void setup()
 {
   Serial.begin(115200);
@@ -101,6 +99,7 @@ void loop()
   // Check if time matches
   if (timeinfo.tm_hour == reminderHour && timeinfo.tm_min == reminderMinute && timeinfo.tm_sec == 0 && !emailSentToday)
   {
+    playMelody();
     sendEmail();
     emailSentToday = true;
   }
