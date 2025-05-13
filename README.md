@@ -9,4 +9,4 @@
 1. E -> speaker
 2. B -> resistor(1kΩ) -> GPIO25
 3. C -> GND
-   ...Other side of speaker -> 5V (VIN)
+   & ...Other side of speaker -> 5V (VIN)

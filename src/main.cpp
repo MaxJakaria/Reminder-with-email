@@ -2,17 +2,18 @@
 #include <ESP_Mail_Client.h>
 #include "time.h"
 #include "melody.h"
+#include "send_email.h"
 
 // WiFi credentials
 const char *ssid = "Galaxy M31850B";
 const char *password = "12341234";
 
 // SMTP credentials
-#define SMTP_HOST "smtp.gmail.com"
-#define SMTP_PORT 465
-#define AUTHOR_EMAIL "mdjakariahossen987654321@gmail.com"
-#define AUTHOR_PASSWORD "biomvhbwtmhjkmsm"
-#define RECIPIENT_EMAIL "maxjakaria825@gmail.com"
+const char *SMTP_HOST = "smtp.gmail.com";
+const int SMTP_PORT = 465;
+const char *AUTHOR_EMAIL = "mdjakariahossen987654321@gmail.com";
+const char *AUTHOR_PASSWORD = "biomvhbwtmhjkmsm";
+const char *RECIPIENT_EMAIL = "maxjakaria825@gmail.com";
 
 // NTP settings (adjust time zone as needed)
 const char *ntpServer = "pool.ntp.org";
@@ -111,42 +112,4 @@ void loop()
   }
 
   delay(1000); // check every second
-}
-
-void sendEmail()
-{
-  // Play melody as alarm
-  playMelody();
-
-  // --- Send email ---
-  ESP_Mail_Session session;
-  session.server.host_name = SMTP_HOST;
-  session.server.port = SMTP_PORT;
-  session.login.email = AUTHOR_EMAIL;
-  session.login.password = AUTHOR_PASSWORD;
-
-  message.sender.name = "ESP32 Tablet Reminder";
-  message.sender.email = AUTHOR_EMAIL;
-  message.subject = "Medicine Reminder";
-  message.addRecipient("User", RECIPIENT_EMAIL);
-  message.text.content = "It's time to take your medicine!";
-  message.text.charSet = "utf-8";
-  message.text.transfer_encoding = Content_Transfer_Encoding::enc_7bit;
-
-  if (!smtp.connect(&session))
-  {
-    Serial.println("SMTP Connection Failed");
-    return;
-  }
-
-  if (!MailClient.sendMail(&smtp, &message))
-  {
-    Serial.println("Send Failed: " + smtp.errorReason());
-  }
-  else
-  {
-    Serial.println("✅ Email sent successfully.");
-  }
-
-  smtp.closeSession();
 }
