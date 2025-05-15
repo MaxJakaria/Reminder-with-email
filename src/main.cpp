@@ -2,6 +2,7 @@
 #include <ESP_Mail_Client.h>
 #include "time.h"
 #include "melody.h"
+#include "reminder_manager.h"
 #include "send_email.h"
 
 // WiFi credentials
@@ -9,15 +10,13 @@ const char *ssid = "Galaxy M31850B";
 const char *password = "12341234";
 
 // SMTP credentials
-const char *SMTP_HOST = "smtp.gmail.com";
-const int SMTP_PORT = 465;
 const char *AUTHOR_EMAIL = "mdjakariahossen987654321@gmail.com";
 const char *AUTHOR_PASSWORD = "biomvhbwtmhjkmsm";
 const char *RECIPIENT_EMAIL = "maxjakaria825@gmail.com";
 
-// NTP settings (adjust time zone as needed)
+// NTP settings
 const char *ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 6 * 3600; // GMT+6
+const long gmtOffset_sec = 6 * 3600;
 const int daylightOffset_sec = 0;
 
 // Buzzer pin
@@ -26,19 +25,14 @@ const int daylightOffset_sec = 0;
 SMTPSession smtp;
 SMTP_Message message;
 
-int reminderHour = -1;
-int reminderMinute = -1;
-bool emailSentToday = false;
+ReminderManager reminderManager;
 
 void setup()
 {
   Serial.begin(115200);
-
-  // Setup buzzer pin (optional if melody uses PWM)
   pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, LOW);
 
-  // Connect to WiFi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED)
@@ -48,44 +42,21 @@ void setup()
   }
   Serial.println(" Connected");
 
-  // Initialize NTP time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
-  Serial.println("\nEnter reminder time in HH:MM format (24-hour):");
+  Serial.println("\nEnter medicine and number of times per day in format: Name,Times (e.g., Napa,3):");
 }
 
 void loop()
 {
-  // Handle serial input
+  // Handle serial input for medicine reminders
   if (Serial.available())
   {
+    delay(5000); // Give user time to type
     String input = Serial.readStringUntil('\n');
-    delay(1000);
     input.trim();
-
-    if (input.length() == 5 && input.charAt(2) == ':')
-    {
-      reminderHour = input.substring(0, 2).toInt();
-      reminderMinute = input.substring(3, 5).toInt();
-
-      if (reminderHour >= 0 && reminderHour <= 23 && reminderMinute >= 0 && reminderMinute <= 59)
-      {
-        Serial.printf("Reminder set for %02d:%02d\n", reminderHour, reminderMinute);
-        emailSentToday = false;
-      }
-      else
-      {
-        Serial.println("Invalid time. Please enter in HH:MM format.");
-      }
-    }
-    else
-    {
-      Serial.println("Invalid format. Use HH:MM (e.g., 08:30)");
-    }
+    reminderManager.addRemindersFromInput(input);
   }
-
-  if (reminderHour == -1)
-    return;
 
   // Get current time
   struct tm timeinfo;
@@ -96,19 +67,8 @@ void loop()
     return;
   }
 
-  // Check if time matches
-  if (timeinfo.tm_hour == reminderHour && timeinfo.tm_min == reminderMinute && timeinfo.tm_sec == 0 && !emailSentToday)
-  {
-    playMelody();
-    sendEmail();
-    emailSentToday = true;
-  }
-
-  // Reset flag after minute changes
-  if (timeinfo.tm_min != reminderMinute)
-  {
-    emailSentToday = false;
-  }
+  // Check and trigger reminders
+  reminderManager.checkAndTrigger(timeinfo);
 
   delay(1000); // check every second
 }
