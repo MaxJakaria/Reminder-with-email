@@ -1,0 +1,7 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define MAX_REMINDER_PER_DAY 24
+#define REMINDER_SIZE 500
+
+#endif

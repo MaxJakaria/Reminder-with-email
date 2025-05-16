@@ -1,4 +1,5 @@
 #include "reminder_manager.h"
+#include "constants.h"
 #include "melody.h"
 #include "send_email.h"
 
@@ -12,21 +13,24 @@ void ReminderManager::addRemindersFromInput(const String &input)
         String medName = input.substring(0, commaIdx);
         int timesPerDay = input.substring(commaIdx + 1).toInt();
 
-        if (timesPerDay > 0 && timesPerDay <= MAX_REMINDERS)
+        if (timesPerDay > 0 && timesPerDay <= REMINDER_SIZE)
         {
             int startHour = 8;
             int interval = (24 - startHour) / timesPerDay;
-            for (int i = 0; i < timesPerDay && reminderCount < MAX_REMINDERS; i++)
-            {
-                int hour = startHour + i * interval;
-                if (hour >= 24)
-                    hour -= 24;
-                reminders[reminderCount++] = Reminder(medName, hour, 0);
-                Serial.printf("Added: %s at %02d:00\n", medName.c_str(), hour);
-            }
-            if (reminderCount >= MAX_REMINDERS)
+            if (reminderCount + timesPerDay >= REMINDER_SIZE)
             {
                 Serial.println("Max reminders reached.");
+            }
+            else
+            {
+                for (int i = 0; i < timesPerDay && reminderCount < MAX_REMINDER_PER_DAY; i++)
+                {
+                    int hour = startHour + i * interval;
+                    if (hour >= 24)
+                        hour -= 24;
+                    reminders[reminderCount++] = Reminder(medName, hour, 0);
+                    Serial.printf("Added: %s at %02d:00\n", medName.c_str(), hour);
+                }
             }
         }
         else
@@ -44,11 +48,9 @@ void ReminderManager::checkAndTrigger(const tm &timeinfo)
 {
     for (int i = 0; i < reminderCount; i++)
     {
-        if (timeinfo.tm_hour == reminders[i].getHour() &&
-            timeinfo.tm_min == reminders[i].getMinute() &&
-            timeinfo.tm_sec == 0 &&
-            !reminders[i].shouldTrigger(timeinfo))
+        if (reminders[i].shouldTrigger(timeinfo))
         {
+            Serial.println("Triggering reminder: " + reminders[i].getName());
             playMelody();
             sendEmail(reminders[i].getName());
             reminders[i].markTriggered();

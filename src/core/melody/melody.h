@@ -17,6 +17,5 @@ extern int noteDurations[];
 
 // Function declarations
 void playMelody();
-void handleMelody();
 
 #endif

@@ -3,8 +3,7 @@
 
 #include <Arduino.h>
 #include "reminder.h"
-
-#define MAX_REMINDERS 6
+#include "constants.h"
 
 class ReminderManager
 {
@@ -14,7 +13,7 @@ public:
     void checkAndTrigger(const tm &timeinfo);
 
 private:
-    Reminder reminders[MAX_REMINDERS];
+    Reminder reminders[REMINDER_SIZE];
     int reminderCount;
 };
 
