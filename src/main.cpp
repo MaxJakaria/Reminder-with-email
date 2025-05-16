@@ -4,6 +4,7 @@
 #include "melody.h"
 #include "reminder_manager.h"
 #include "send_email.h"
+#include <WebServer.h>
 
 // WiFi credentials
 const char *ssid = "Galaxy M31850B";
@@ -27,6 +28,22 @@ SMTP_Message message;
 
 ReminderManager reminderManager;
 
+WebServer server(80);
+void handleAddReminder()
+{
+  if (server.hasArg("plain"))
+  {
+    String input = server.arg("plain");
+    input.trim();
+    reminderManager.addRemindersFromInput(input);
+    server.send(200, "text/plain", "Reminder added: " + input);
+  }
+  else
+  {
+    server.send(400, "text/plain", "No reminder data received");
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -41,14 +58,21 @@ void setup()
     Serial.print(".");
   }
   Serial.println(" Connected");
+  Serial.println("IP Address: " + WiFi.localIP().toString());
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
+  server.on("/add_reminder", HTTP_POST, handleAddReminder);
+  server.begin();
 
   Serial.println("\nEnter medicine and number of times per day in format: Name,Times (e.g., Napa,3):");
 }
 
 void loop()
 {
+  // to handle HTTP requests
+  server.handleClient();
+
   // Handle serial input for medicine reminders
   if (Serial.available())
   {
